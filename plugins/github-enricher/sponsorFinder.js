@@ -29,6 +29,9 @@ const setMinimumContributionCount = n => {
 }
 
 const initSponsorCache = async () => {
+  // If there are problems with the cache, it works well to add something like companyCache.flushAll() on a main-branch build
+  // (and then remove it next build)
+
   repoContributorCache = new PersistableCache({
     key: "github-api-for-contribution-repo",
     stdTTL: 2 * DAY_IN_SECONDS
