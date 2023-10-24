@@ -75,7 +75,7 @@ jobs:
       - name: Store PR id
         if: "github.event_name == 'pull_request'"
         run: echo ${{ github.event.number }} > ./public/pr-id.txt
-      - name: Publishing directory for PR preview
+      - name: Publishing directory for web hosting
         uses: actions/upload-artifact@v3
         with:
           name: site
