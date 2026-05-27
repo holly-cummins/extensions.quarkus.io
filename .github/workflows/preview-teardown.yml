@@ -4,10 +4,9 @@ on:
   pull_request_target:
     types: [ closed ]
 
-  permissions:
-    pull-requests: write
-    packages: read
-
+permissions:
+  pull-requests: write
+  packages: read
 
 jobs:
   preview-teardown:
