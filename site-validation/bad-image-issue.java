@@ -2,7 +2,7 @@
 
 //JAVA 21+
 
-//DEPS https://github.com/holly-cummins/github-api/tree/785cd3f243b3
+//DEPS org.kohsuke:github-api:1.327
 //DEPS info.picocli:picocli:4.2.0
 
 import com.fasterxml.jackson.core.JsonProcessingException;
