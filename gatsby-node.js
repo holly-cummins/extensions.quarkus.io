@@ -240,19 +240,93 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   const releaseMonthTemplate = path.resolve(`./src/templates/extensions-added-list.js`)
   const releaseYearTemplate = path.resolve(`./src/templates/extensions-added-by-year-list.js`)
 
-  // Get all extensions
+  // Get all extensions with full data for JSON generation
   const result = await graphql(
     `
       {
         allExtension(sort: { fields: [name], order: ASC }) {
           nodes {
             id
+            name
+            description
+            artifact
             slug
             isSuperseded
+            platforms
+            origins
+            streams {
+              id
+              isLatestThree
+              isAlpha
+              platformKey
+            }
+            duplicates {
+              relationship
+              differentId
+              differenceReason
+              slug
+            }
             metadata {
+              status
+              categories
+              keywords
+              guide
+              builtWithQuarkusCore
+              quarkus_core_compatibility
+              unlisted
+              minimumJavaVersion
+              sponsor
+              sponsors
+              icon {
+                publicURL
+              }
               maven {
+                version
+                groupId
+                artifactId
+                url
+                timestamp
+                since
                 sinceMonth
                 sinceYear
+              }
+              javadoc {
+                url
+              }
+              sourceControl {
+                repository {
+                  url
+                  owner
+                  project
+                  extensionCount
+                }
+                issues
+                issuesUrl
+                samplesUrl {
+                  description
+                  url
+                }
+                sponsors
+                lastUpdated
+                numMonthsForContributions
+                contributors {
+                  name
+                  contributions
+                  login
+                  company
+                  url
+                }
+                companies {
+                  name
+                  contributions
+                }
+                extensionYamlUrl
+                extensionRootUrl
+              }
+              downloads {
+                artifactId
+                uniqueId
+                rank
               }
             }
           }
@@ -275,10 +349,12 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
   // `context` is available in the template as a prop and as a variable in GraphQL
 
   if (extensionNodes.length > 0) {
-    extensionNodes.forEach((extensionNode, index) => {
+    // Generate both HTML pages and JSON files for each extension
+    const jsonPromises = extensionNodes.map(async (extensionNode, index) => {
       const previousPostId = getPreviousPost(index, extensionNodes)
       const nextPostId = getNextPost(index, extensionNodes)
 
+      // Create HTML page
       createPage({
         path: extensionNode.slug,
         component: extensionTemplate,
@@ -288,7 +364,58 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
           nextPostId,
         },
       })
+
+      // Generate JSON file
+      // Transform the data to match registry schema with enrichments added
+      const jsonData = {
+        // Registry base fields
+        name: extensionNode.name,
+        description: extensionNode.description,
+        artifact: extensionNode.artifact,
+        origins: extensionNode.origins,
+
+        // Registry metadata + enrichments
+        metadata: {
+          // Registry fields
+          status: extensionNode.metadata?.status,
+          categories: extensionNode.metadata?.categories,
+          keywords: extensionNode.metadata?.keywords,
+          unlisted: extensionNode.metadata?.unlisted,
+          sponsor: extensionNode.metadata?.sponsor,
+          sponsors: extensionNode.metadata?.sponsors,
+
+          // Enriched fields (not in registry)
+          guide: extensionNode.metadata?.guide,
+          "built-with-quarkus-core": extensionNode.metadata?.builtWithQuarkusCore,
+          "quarkus-core-compatibility": extensionNode.metadata?.quarkus_core_compatibility,
+          "minimum-java-version": extensionNode.metadata?.minimumJavaVersion,
+          "icon-url": extensionNode.metadata?.icon?.publicURL,
+          maven: extensionNode.metadata?.maven,
+          javadoc: extensionNode.metadata?.javadoc,
+          scm: extensionNode.metadata?.sourceControl,
+          downloads: extensionNode.metadata?.downloads ? {
+            artifactId: extensionNode.metadata.downloads.artifactId,
+            uniqueId: extensionNode.metadata.downloads.uniqueId,
+            rank: extensionNode.metadata.downloads.rank,
+          } : undefined,
+        },
+
+        // Enriched fields (not in registry)
+        platforms: extensionNode.platforms,
+        streams: extensionNode.streams,
+        duplicates: extensionNode.duplicates,
+        isSuperseded: extensionNode.isSuperseded,
+      }
+
+      // Create directory and write JSON file
+      const extensionDir = path.join("public", extensionNode.slug)
+      await fs.mkdir(extensionDir, { recursive: true })
+      const jsonPath = path.join(extensionDir, "info.json")
+      await fs.writeFile(jsonPath, JSON.stringify(jsonData, null, 2))
     })
+
+    await Promise.all(jsonPromises)
+    console.log(`Generated ${extensionNodes.length} extension pages and JSON files.`)
   }
 
   const months = [...new Set(extensionNodes.map(extensionNode => extensionNode.metadata?.maven?.sinceMonth))].filter(month => !!month)
@@ -400,6 +527,7 @@ exports.onPostBootstrap = async () => {
     })
   }
 }
+
 
 exports.createSchemaCustomization = ({ actions }) => {
   const { createTypes } = actions
