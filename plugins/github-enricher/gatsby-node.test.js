@@ -1437,6 +1437,64 @@ describe("the github data handler", () => {
     })
   })
 
+  describe("where the social media preview URL has query parameters with JWT tokens", () => {
+    const url = "http://fake.github.com/someuser/aproject"
+
+    const avatarUrl = "http://something.com/someuser.png"
+    const socialMediaPreviewUrl =
+      "https://repository-images.githubusercontent.com/9c2af8ee-c6e0-49bb-bd42-45d2ffe877e1?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20260803%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260803T070052Z&X-Amz-Expires=300&X-Amz-Signature=ed16403f5250ab693766ec1c67fb6fa155b0605726ae221801eb8b97f5185de7&X-Amz-SignedHeaders=host&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoiaHR0cHM6Ly9yZXBvc2l0b3J5LWltYWdlcy5naXRodWJ1c2VyY29udGVudC5jb20vIiwia2V5Ijoia2V5MSIsImV4cCI6MTc4NTc0MDc1MiwibmJmIjoxNzg1NzQwNDUyLCJwYXRoIjoicmVwb3NpdG9yeS1pbWFnZXMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIn0.Mpe4U_C7yL9jJe76u_d20aW-XYvf_uAw0yCy_qx87Nc-02921b06.png"
+
+    const response = {
+      data: {
+        repository: {
+          issues: {
+            totalCount: 10,
+          },
+          openGraphImageUrl: socialMediaPreviewUrl,
+        },
+        repositoryOwner: { avatarUrl: avatarUrl },
+      },
+    }
+
+    const metadata = {
+      sourceControl: `${url},uniquenessstuff`,
+    }
+
+    const node = {
+      metadata,
+      internal,
+    }
+
+    beforeAll(async () => {
+      queryGraphQl.mockResolvedValue(response)
+      await onPreBootstrap({ cache, actions: {} })
+      return onCreateNode({
+        node,
+        createContentDigest,
+        createNodeId,
+        actions,
+      })
+    })
+
+    afterAll(() => {
+      jest.clearAllMocks()
+    })
+
+    it("creates a new file node with the full URL including query parameters", async () => {
+      expect(createRemoteFileNode).toHaveBeenCalledWith(
+        expect.objectContaining({ url: socialMediaPreviewUrl })
+      )
+    })
+
+    it("uses a shortened filename without query parameters to avoid ENAMETOOLONG errors", async () => {
+      expect(createRemoteFileNode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "9c2af8ee-c6e0-49bb-bd42-45d2ffe877e1",
+        })
+      )
+    })
+  })
+
   describe("reading sponsor information from the extension catalog", () => {
     const sponsor1 = "Big Company Inc"
     const sponsor2 = "Small Company Inc"
