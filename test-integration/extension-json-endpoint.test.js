@@ -71,19 +71,35 @@ describe("extension JSON endpoint", () => {
       expect(jsonData.metadata.maven.url).toBeDefined()
     })
 
-    it("should include 'since' timestamp - the key enrichment field from issue #3387", () => {
-      expect(jsonData.metadata.maven).toHaveProperty("since")
-      expect(jsonData.metadata.maven.since).toBeDefined()
+    it("should include 'first-released' timestamp - the key enrichment field from issue #3387", () => {
+      expect(jsonData.metadata.maven).toHaveProperty("first-released")
+      expect(jsonData.metadata.maven["first-released"]).toBeDefined()
     })
 
-    it("should include sinceMonth and sinceYear", () => {
-      expect(jsonData.metadata.maven).toHaveProperty("sinceMonth")
-      expect(jsonData.metadata.maven).toHaveProperty("sinceYear")
+    it("should include 'first-released-date' in ISO 8601 format", () => {
+      expect(jsonData.metadata.maven).toHaveProperty("first-released-date")
+      const date = jsonData.metadata.maven["first-released-date"]
+      expect(date).toBeDefined()
+      // Verify ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
     })
 
-    it("should include timestamp", () => {
-      expect(jsonData.metadata.maven).toHaveProperty("timestamp")
-      expect(jsonData.metadata.maven.timestamp).toBeDefined()
+    it("should include first-released-month and first-released-year", () => {
+      expect(jsonData.metadata.maven).toHaveProperty("first-released-month")
+      expect(jsonData.metadata.maven).toHaveProperty("first-released-year")
+    })
+
+    it("should include 'last-released' timestamp", () => {
+      expect(jsonData.metadata.maven).toHaveProperty("last-released")
+      expect(jsonData.metadata.maven["last-released"]).toBeDefined()
+    })
+
+    it("should include 'last-released-date' in ISO 8601 format", () => {
+      expect(jsonData.metadata.maven).toHaveProperty("last-released-date")
+      const date = jsonData.metadata.maven["last-released-date"]
+      expect(date).toBeDefined()
+      // Verify ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+      expect(date).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
     })
   })
 
