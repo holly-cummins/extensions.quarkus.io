@@ -182,9 +182,14 @@ exports.onCreateNode = async (
     }
 
     if (scmInfo.socialImage) {
+      // Extract just the base filename without query parameters to avoid ENAMETOOLONG errors
+      // GitHub's image URLs now include JWT tokens that can make filenames exceed the 255-char limit
+      const urlWithoutQuery = scmInfo.socialImage.split('?')[0]
+      const baseName = path.basename(urlWithoutQuery)
+
       const fileNode = await createRemoteFileNode({
         url: scmInfo.socialImage,
-        name: path.basename(scmInfo.socialImage),
+        name: baseName,
         parentNodeId: scmInfo.id,
         getCache,
         createNode,
