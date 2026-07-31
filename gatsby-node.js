@@ -390,7 +390,24 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
           "quarkus-core-compatibility": extensionNode.metadata?.quarkus_core_compatibility,
           "minimum-java-version": extensionNode.metadata?.minimumJavaVersion,
           "icon-url": extensionNode.metadata?.icon?.publicURL,
-          maven: extensionNode.metadata?.maven,
+          maven: extensionNode.metadata?.maven ? {
+            groupId: extensionNode.metadata.maven.groupId,
+            artifactId: extensionNode.metadata.maven.artifactId,
+            version: extensionNode.metadata.maven.version,
+            url: extensionNode.metadata.maven.url,
+            earliestVersion: extensionNode.metadata.maven.earliestVersion,
+            relocation: extensionNode.metadata.maven.relocation,
+            "last-released": extensionNode.metadata.maven.timestamp,
+            "last-released-date": extensionNode.metadata.maven.timestamp
+              ? new Date(+extensionNode.metadata.maven.timestamp).toISOString()
+              : undefined,
+            "first-released": extensionNode.metadata.maven.since,
+            "first-released-date": extensionNode.metadata.maven.since
+              ? new Date(+extensionNode.metadata.maven.since).toISOString()
+              : undefined,
+            "first-released-month": extensionNode.metadata.maven.sinceMonth,
+            "first-released-year": extensionNode.metadata.maven.sinceYear,
+          } : undefined,
           javadoc: extensionNode.metadata?.javadoc,
           scm: extensionNode.metadata?.sourceControl,
           downloads: extensionNode.metadata?.downloads ? {
