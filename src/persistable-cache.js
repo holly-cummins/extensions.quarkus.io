@@ -21,6 +21,8 @@ class PersistableCache {
     this.cache = new NodeCache(options)
     this.hits = 0
     this.misses = 0
+    this.coalesced = 0
+    this.inflight = new Map()
 
     this.cachePath = this.options?.cachePath || DEFAULT_CACHE_PATH
 
@@ -108,19 +110,31 @@ class PersistableCache {
   }
 
   getStats() {
-    return { hits: this.hits, misses: this.misses, hitRate: this.hits + this.misses > 0 ? (this.hits / (this.hits + this.misses) * 100).toFixed(1) + "%" : "N/A" }
+    return { hits: this.hits, misses: this.misses, coalesced: this.coalesced, hitRate: this.hits + this.misses > 0 ? (this.hits / (this.hits + this.misses) * 100).toFixed(1) + "%" : "N/A" }
   }
 
   async getOrSet(key, functionThatReturnsAPromise) {
     if (this.has(key)) {
       this.hits++
       return this.get(key)
-    } else {
-      this.misses++
-      const answer = await functionThatReturnsAPromise()
-      this.set(key, answer)
-      return answer
     }
+
+    if (this.inflight.has(key)) {
+      this.coalesced++
+      return this.inflight.get(key)
+    }
+
+    this.misses++
+    const promise = functionThatReturnsAPromise().then(answer => {
+      this.set(key, answer)
+      this.inflight.delete(key)
+      return answer
+    }, err => {
+      this.inflight.delete(key)
+      throw err
+    })
+    this.inflight.set(key, promise)
+    return promise
   }
 
 }
