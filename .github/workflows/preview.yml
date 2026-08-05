@@ -12,6 +12,7 @@ on:
 permissions:
   actions: read
   pull-requests: write
+  packages: read
 
 jobs:
   preview:
