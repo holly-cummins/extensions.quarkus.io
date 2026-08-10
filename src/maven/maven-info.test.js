@@ -128,6 +128,30 @@ describe("the maven information generator", () => {
         })
       })
     })
+
+    describe("when the relocation has unresolved maven variables", () => {
+
+      beforeEach(async () => {
+        axios.get.mockResolvedValueOnce({
+          "data": mavenMetadata
+        })
+        axios.get.mockResolvedValueOnce({
+          // eslint-disable-next-line no-template-curly-in-string
+          "data": "<project><distributionManagement><relocation>\n" +
+            // eslint-disable-next-line no-template-curly-in-string
+            "<groupId>${project.groupId}</groupId>\n" +
+            // eslint-disable-next-line no-template-curly-in-string
+            "<artifactId>${project.artifactId}</artifactId>\n" +
+            "<version>1.0.0</version>" +
+            "</relocation></distributionManagement></project>"
+        })
+      })
+
+      it("discards the relocation", async () => {
+        const mavenInfo = await generateMavenInfo(artifact)
+        expect(mavenInfo.relocation).toBeUndefined()
+      })
+    })
   })
 
   describe("when the repository listing has errors", () => {
