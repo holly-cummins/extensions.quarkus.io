@@ -241,6 +241,10 @@ const getRelocation = async (coordinates) => {
           if (!relocation.groupId) {
             relocation.groupId = groupId
           }
+
+          if (relocation.groupId.includes("${") || relocation.artifactId.includes("${")) {
+            return undefined
+          }
         }
         return relocation
       }
