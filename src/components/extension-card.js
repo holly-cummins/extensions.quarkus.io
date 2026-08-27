@@ -63,6 +63,11 @@ const ExtensionName = styled.div`
   display: -webkit-box;
   -webkit-line-clamp: var(--num-lines);
   -webkit-box-orient: vertical;
+
+  ${Card}:hover &,
+  ${Card}:focus & {
+    color: var(--link-color);
+  }
 `
 
 const ExtensionDescription = styled.div`
