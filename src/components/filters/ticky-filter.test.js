@@ -209,7 +209,7 @@ describe("ticky filter", () => {
       })
     })
     describe("when the query string already has a entry", () => {
-      const entryName = "Treefrog"
+      const entryName = "Tree frog"
 
       beforeEach(() => {
         mockQueryParamSearchString = entryName.toLowerCase()

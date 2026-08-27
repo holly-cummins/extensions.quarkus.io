@@ -142,6 +142,10 @@ const ExtensionCard = ({ extension }) => {
   const unlisted = extension.metadata.unlisted
   const superseded = extension.isSuperseded
 
+  // Use the official category name from categoryObjects if available, fall back to prettifying the raw ID
+  const categoryId = extension.metadata?.categories?.[0]
+  const categoryName = extension.metadata?.categoryObjects?.[0]?.name ?? (categoryId ? prettyCategory(categoryId) : undefined)
+
   return (
     <Card to={"/" + extension.slug} $unlisted={unlisted} $superseded={superseded}>
       <MainInformation>
@@ -158,8 +162,8 @@ const ExtensionCard = ({ extension }) => {
           {unlisted ? "Unlisted" : superseded ? "Relocated" : spacer}
         </ExtensionInfo>
         <ExtensionInfo>
-          {extension.metadata?.categories?.length > 0
-            ? `Category: ${prettyCategory(extension.metadata.categories[0])}`
+          {categoryName !== undefined
+            ? `Category: ${categoryName}`
             : spacer}
         </ExtensionInfo>
         <ExtensionInfo>
