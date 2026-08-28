@@ -64,22 +64,40 @@ exports.sourceNodes = async ({
 
   // Create a map of category ID to category info from the API
   const categoryMap = new Map()
+  const registryCategoryNames = new Set()
   if (apiCategories) {
     apiCategories.forEach(cat => {
       categoryMap.set(cat.id, cat)
+      registryCategoryNames.add(cat.name.toLowerCase())
     })
   }
 
   const categoryPromises = categoryIds.map(async categoryId => {
     if (categoryId) {
+      const count = categoriesWithDuplicates.filter(c => c === categoryId).length
+      const categoryInfo = categoryMap.get(categoryId)
+
+      let name, description
+
+      if (categoryInfo) {
+        // Category is in the registry, use official name
+        name = categoryInfo.name
+        description = categoryInfo.description
+      } else {
+        // Category not in registry - prettify it
+        name = prettyCategory(categoryId)
+
+        // Check if the prettified name collides with a registry category name
+        if (registryCategoryNames.has(name.toLowerCase())) {
+          console.warn(`Dropping category '${categoryId}' (used by ${count} extension${count > 1 ? 's' : ''}) - prettified name '${name}' collides with official registry category. Extensions should use the official category ID from the registry.`)
+          return
+        }
+
+        description = undefined
+      }
+
       const slug = extensionSlug(categoryId)
       const id = createNodeId(slug)
-      const count = categoriesWithDuplicates.filter(c => c === categoryId).length
-
-      // Use API category info if available, otherwise prettify the ID
-      const categoryInfo = categoryMap.get(categoryId)
-      const name = categoryInfo ? categoryInfo.name : prettyCategory(categoryId)
-      const description = categoryInfo ? categoryInfo.description : undefined
 
       const node = {
         categoryId: categoryId,

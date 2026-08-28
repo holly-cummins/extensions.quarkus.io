@@ -134,4 +134,50 @@ describe("extension card", () => {
     })
   })
 
+  describe("an extension with category that collides with registry category", () => {
+    const extension = {
+      name: "Camunda",
+      slug: "camunda-slug",
+      metadata: {
+        categories: ["business automation"], // Collides with "business-automation" -> dropped
+        categoryObjects: [], // Empty because category was dropped due to collision
+      },
+    }
+
+    beforeEach(() => {
+      render(<ExtensionCard extension={extension} />)
+    })
+
+    it("renders the extension name", () => {
+      expect(screen.getByText(extension.name)).toBeTruthy()
+    })
+
+    it("does not show a category when the category was dropped due to collision", () => {
+      expect(screen.queryByText(/Category:/)).toBeFalsy()
+    })
+  })
+
+  describe("an extension with custom category that does not collide", () => {
+    const extension = {
+      name: "Custom Extension",
+      slug: "custom-slug",
+      metadata: {
+        categories: ["my-custom-category"],
+        categoryObjects: [{ categoryId: "my-custom-category", name: "My Custom Category" }], // Kept because no collision
+      },
+    }
+
+    beforeEach(() => {
+      render(<ExtensionCard extension={extension} />)
+    })
+
+    it("renders the extension name", () => {
+      expect(screen.getByText(extension.name)).toBeTruthy()
+    })
+
+    it("shows the prettified custom category name", () => {
+      expect(screen.getByText("Category: My Custom Category")).toBeTruthy()
+    })
+  })
+
 })
