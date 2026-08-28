@@ -142,9 +142,14 @@ const ExtensionCard = ({ extension }) => {
   const unlisted = extension.metadata.unlisted
   const superseded = extension.isSuperseded
 
-  // Use the official category name from categoryObjects if available, fall back to prettifying the raw ID
+  // Use the official category name from categoryObjects if available
+  // Only fall back to prettifying if categoryObjects is missing entirely (not just empty)
+  // An empty categoryObjects array means the category was intentionally dropped (e.g., collision)
   const categoryId = extension.metadata?.categories?.[0]
-  const categoryName = extension.metadata?.categoryObjects?.[0]?.name ?? (categoryId ? prettyCategory(categoryId) : undefined)
+  const hasCategory = extension.metadata?.categoryObjects !== undefined
+  const categoryName = hasCategory
+    ? extension.metadata.categoryObjects[0]?.name
+    : (categoryId ? prettyCategory(categoryId) : undefined)
 
   return (
     <Card to={"/" + extension.slug} $unlisted={unlisted} $superseded={superseded}>
