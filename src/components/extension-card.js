@@ -148,7 +148,7 @@ const ExtensionCard = ({ extension }) => {
   const categoryId = extension.metadata?.categories?.[0]
   const hasCategory = extension.metadata?.categoryObjects !== undefined
   const categoryName = hasCategory
-    ? extension.metadata.categoryObjects[0]?.name
+    ? extension.metadata?.categoryObjects[0]?.name
     : (categoryId ? prettyCategory(categoryId) : undefined)
 
   return (
