@@ -56,7 +56,7 @@ describe("keyword filter", () => {
     })
 
     describe("when clicking a ticky box", () => {
-      const keywordName = "Tree frog"
+      const keywordName = "Treefrog"
       beforeEach(async () => {
         await user.click(screen.getByText(keywordName))
       })
@@ -81,7 +81,7 @@ describe("keyword filter", () => {
     })
 
     describe("when clicking several ticky boxes", () => {
-      const keywordName = "Tree frog"
+      const keywordName = "Treefrog"
       const otherName = "Toad"
       beforeEach(async () => {
         await user.click(screen.getByText(keywordName))
@@ -111,7 +111,7 @@ describe("keyword filter", () => {
     })
 
     describe("when un-clicking a ticky box", () => {
-      const keywordName = "Tree frog"
+      const keywordName = "Treefrog"
       beforeEach(async () => {
         await user.click(screen.getByText(keywordName))
         await user.click(screen.getByText(keywordName))
@@ -134,7 +134,7 @@ describe("keyword filter", () => {
     })
   })
   describe("when the query string already has a keyword", () => {
-    const keywordName = "Tree frog"
+    const keywordName = "Treefrog"
 
     beforeEach(() => {
       mockQueryParamSearchString = keywordName.toLowerCase()
